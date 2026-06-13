@@ -1,6 +1,6 @@
 /* Mix It! service worker — caches the app shell so it works offline. */
 
-const CACHE = "mix-it-v5";
+const CACHE = "mix-it-v6";
 const ASSETS = [
   "./",
   "./index.html",

@@ -190,7 +190,9 @@ function renderResult(animate) {
   const mixed = mixColors(state.A, state.B, currentWeight());
   result.style.background = mixed;
   result.style.color = readableInk(mixed);
-  result.innerHTML = "<span>" + nearestColorName(mixed) + "</span>";
+  result.innerHTML =
+    '<span class="result-name">' + nearestColorName(mixed) + "</span>" +
+    '<span class="result-hex">' + mixed.toUpperCase() + "</span>";
   if (animate) {
     result.classList.remove("show");
     void result.offsetWidth; // restart animation
