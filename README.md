@@ -1,70 +1,29 @@
-# Mix It! 🎨
+# Mix It!
 
-A tiny, kid-friendly web app that mixes two colors **like real paint** — so blue + yellow
-makes a vibrant green, and red + blue makes purple. Tap each square to pick a color, set how
-much of each to use with the slider, then press **MIX IT!** to see the result. It installs to
-a phone's home screen as a standalone app (PWA) and works offline.
+A small web app that mixes two colors like paint rather than like light, so blue and yellow
+make green instead of grey. Pick two colors, set the balance with the slider, and it shows the
+blend along with its color name.
 
-No build step, no frameworks, no backend — just static files, perfect for GitHub Pages.
+**Live demo:** https://matstanovsky.github.io/colormixer/
 
-## How it works
+On a phone, open that link and choose "Add to Home Screen" to install it as an app that works
+offline, no app store needed.
 
-- Two squares: tap either one to open the color picker.
-- Pick from the big bright **swatches**, or choose **More colors 🎨** for the full picker.
-- The **Mixing weight** slider sets how much of each color goes into the blend (e.g. 70% / 30%).
-- Press **MIX IT!** and the result square shows the blended color. While a result is showing,
-  dragging the slider (or changing a color) updates it live.
+I vibe-coded it for my kids, so it's made to be tapped through on a phone: big targets and almost no
+text to read.
 
-Colors are blended with **[Spectral.js](https://github.com/rvanwijnen/spectral.js)**, which
-simulates how real paint pigments absorb light (Kubelka–Munk mixing). That's what produces
-natural, vivid secondaries — a true green from blue + yellow — instead of the muddy grey you
-get from naive on-screen (RGB) averaging.
+## What's interesting under the hood
+
+- It blends pigments, not RGB numbers. Plain averaging gives mud, so mixing runs through a
+  spectral (Kubelka–Munk) pigment model via [Spectral.js](https://github.com/rvanwijnen/spectral.js),
+  which follows the same physics as real paint.
+- No framework and no build step: just HTML, CSS and vanilla JS, small enough to read end to end.
+- An installable, offline-first PWA, built with a web manifest and a service-worker cache.
 
 ## Run it locally
 
-Service workers need real HTTP (not opening the file directly), so serve the folder:
-
 ```bash
-# any one of these, from the project folder:
-python -m http.server 8000
-# or
-npx serve .
+python -m http.server 8000   # then open http://localhost:8000
 ```
 
-Then open <http://localhost:8000>.
-
-## Publish free on GitHub Pages
-
-1. Push this repo to GitHub.
-2. Go to **Settings → Pages**.
-3. Under **Source**, choose **Deploy from a branch**, select **`main`** and **`/ (root)`**, save.
-4. After a minute the app is live at `https://<your-username>.github.io/<repo-name>/`.
-
-(The included `.nojekyll` file tells GitHub Pages to serve everything as-is.)
-
-## Install on a phone
-
-Open the live URL on the phone, then:
-
-- **Android (Chrome):** menu → **Install app** / **Add to Home screen**.
-- **iPhone (Safari):** Share button → **Add to Home Screen**.
-
-It then launches full-screen, like a normal app, and works without internet.
-
-## Files
-
-| File | Purpose |
-|------|---------|
-| `index.html` | App layout (two color areas, the weight slider, the MIX IT! button, the result) |
-| `styles.css` | Big touch-friendly, playful styling |
-| `app.js` | Color picker UI, the weight slider logic, and paint-mixing via Spectral.js |
-| `vendor/spectral.min.js` | [Spectral.js](https://github.com/rvanwijnen/spectral.js) pigment-mixing library (MIT, bundled for offline use) |
-| `manifest.webmanifest` | PWA metadata (name, icons, standalone display) |
-| `service-worker.js` | Caches the app for offline use |
-| `fonts/` | Bundled Fredoka font |
-| `icons/` | App icons (192, 512, and maskable) |
-
-## Credits
-
-Color mixing by [Spectral.js](https://github.com/rvanwijnen/spectral.js) © Ronald van Wijnen
-(MIT — see `vendor/spectral.LICENSE.txt`).
+A real server is needed because service workers don't run over `file://`.
