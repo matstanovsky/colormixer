@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("./fonts/fredoka-variable.woff2") format("woff2");
+}
+
 :root {
   --purple: #5b3cc4;
   --purple-dark: #45299b;
@@ -18,7 +26,7 @@ html, body {
 }
 
 body {
-  font-family: "Baloo 2", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
+  font-family: "Fredoka", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--ink);
   display: flex;
@@ -155,8 +163,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.6rem, 8vw, 2.4rem);
-  font-weight: 800;
+  font-size: clamp(1rem, 4.5vw, 1.4rem);
+  font-weight: 700;
   transition: background-color 0.4s ease;
 }
 

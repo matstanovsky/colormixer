@@ -1,12 +1,13 @@
 /* Mix It! service worker — caches the app shell so it works offline. */
 
-const CACHE = "mix-it-v1";
+const CACHE = "mix-it-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
+  "./fonts/fredoka-variable.woff2",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
