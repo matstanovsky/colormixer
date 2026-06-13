@@ -56,6 +56,87 @@ body {
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.7);
 }
 
+/* --- Mixing weight slider (under the title) --- */
+.weight-control {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 4px 22px 0;
+}
+
+.weight-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--purple);
+  opacity: 0.85;
+  margin-bottom: 8px;
+}
+
+#weightSlider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--colA, #dddddd), var(--colB, #bbbbbb));
+  border: 3px solid #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+#weightSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid var(--purple);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+#weightSlider::-moz-range-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid var(--purple);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+#weightSlider::-moz-range-track {
+  height: 18px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.weight-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.weight-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #dddddd;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  display: inline-block;
+}
+
 .app {
   flex: 1;
   display: flex;

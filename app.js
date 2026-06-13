@@ -2,14 +2,11 @@
 
 /* ============================================================
    Mix It! — a kids' color mixing app
-   Colors mix like PAINT (RYB), so blue + yellow = green.
+   Colors mix like PAINT using Spectral.js (Kubelka–Munk pigment
+   mixing), so blue + yellow = a vivid, natural green.
    ============================================================ */
 
 /* ---------- Color helpers ---------- */
-
-function clamp255(v) {
-  return Math.max(0, Math.min(255, Math.round(v)));
-}
 
 function hexToRgb(hex) {
   const h = hex.replace("#", "");
@@ -20,123 +17,21 @@ function hexToRgb(hex) {
   };
 }
 
-function rgbToHex(r, g, b) {
-  const to2 = (v) => clamp255(v).toString(16).padStart(2, "0");
-  return "#" + to2(r) + to2(g) + to2(b);
-}
-
-/* ---------- RYB <-> RGB (Gosset & Chen trilinear interpolation) ----------
-   This is what makes the mixing feel like real paint:
-   blue + yellow -> green, red + blue -> purple, etc.
-   Reference: Gosset & Chen, "Paint Inspired Color Mixing and Compositing
-   for Visualization". */
-
-// The 8 corners of the RYB cube expressed as RGB (0..1).
-const RYB_CUBE = [
-  [1.0, 1.0, 1.0], // 000  white
-  [1.0, 0.0, 0.0], // 100  red
-  [1.0, 1.0, 0.0], // 010  yellow
-  [1.0, 0.5, 0.0], // 110  orange
-  [0.163, 0.373, 0.6], // 001  blue
-  [0.5, 0.0, 0.5], // 101  red + blue   = purple
-  [0.0, 0.66, 0.2], // 011  yellow + blue = green
-  [0.2, 0.094, 0.0], // 111  black/brown
-];
-
-function trilerp(corners, r, y, b) {
-  // corners: array of 8 values for one channel, ordered by index = R + 2Y + 4B
-  const c00 = corners[0] + (corners[1] - corners[0]) * r;
-  const c01 = corners[2] + (corners[3] - corners[2]) * r;
-  const c10 = corners[4] + (corners[5] - corners[4]) * r;
-  const c11 = corners[6] + (corners[7] - corners[6]) * r;
-  const c0 = c00 + (c01 - c00) * y;
-  const c1 = c10 + (c11 - c10) * y;
-  return c0 + (c1 - c0) * b;
-}
-
-function rybToRgb(r, y, b) {
-  const red = trilerp(RYB_CUBE.map((c) => c[0]), r, y, b);
-  const green = trilerp(RYB_CUBE.map((c) => c[1]), r, y, b);
-  const blue = trilerp(RYB_CUBE.map((c) => c[2]), r, y, b);
-  return { r: red * 255, g: green * 255, b: blue * 255 };
-}
-
-// Invert rybToRgb numerically (small gradient-free search).
-// RGB -> RYB by minimizing the difference over the RYB cube.
-function rgbToRyb(r, g, b) {
-  const target = [r / 255, g / 255, b / 255];
-  let best = { r: 0, y: 0, b: 0 };
-  let bestErr = Infinity;
-
-  // Coarse then fine search — cheap and plenty accurate for mixing.
-  const search = (r0, r1, y0, y1, b0, b1, steps) => {
-    const stepR = (r1 - r0) / steps;
-    const stepY = (y1 - y0) / steps;
-    const stepB = (b1 - b0) / steps;
-    for (let i = 0; i <= steps; i++) {
-      for (let j = 0; j <= steps; j++) {
-        for (let k = 0; k <= steps; k++) {
-          const rr = r0 + stepR * i;
-          const yy = y0 + stepY * j;
-          const bb = b0 + stepB * k;
-          const out = rybToRgb(rr, yy, bb);
-          const err =
-            (out.r / 255 - target[0]) ** 2 +
-            (out.g / 255 - target[1]) ** 2 +
-            (out.b / 255 - target[2]) ** 2;
-          if (err < bestErr) {
-            bestErr = err;
-            best = { r: rr, y: yy, b: bb };
-          }
-        }
-      }
-    }
-  };
-
-  search(0, 1, 0, 1, 0, 1, 10);
-  const d = 0.1;
-  search(
-    Math.max(0, best.r - d), Math.min(1, best.r + d),
-    Math.max(0, best.y - d), Math.min(1, best.y + d),
-    Math.max(0, best.b - d), Math.min(1, best.b + d),
-    10
-  );
-  return best;
-}
-
-/* ---------- Boost saturation a touch so mixes look vivid for kids ---------- */
-function boostSaturation(r, g, b, factor) {
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  // pull each channel away from the gray (luminance) point
-  return {
-    r: l + (r - l) * factor,
-    g: l + (g - l) * factor,
-    b: l + (b - l) * factor,
-  };
-}
-
-/* ---------- Mix two colors like paint ---------- */
-function mixColors(hexA, hexB) {
-  const a = hexToRgb(hexA);
-  const b = hexToRgb(hexB);
-  const ra = rgbToRyb(a.r, a.g, a.b);
-  const rb = rgbToRyb(b.r, b.g, b.b);
-  const mixed = rybToRgb(
-    (ra.r + rb.r) / 2,
-    (ra.y + rb.y) / 2,
-    (ra.b + rb.b) / 2
-  );
-  const vivid = boostSaturation(mixed.r, mixed.g, mixed.b, 1.3);
-  return rgbToHex(vivid.r, vivid.g, vivid.b);
-}
-
-/* ---------- Pick a readable text color for a background ---------- */
+/* Pick a readable text color (dark or light) for a given background */
 function readableInk(hex) {
   const { r, g, b } = hexToRgb(hex);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.6 ? "#2a2140" : "#ffffff";
+}
+
+/* ---------- Mix two colors like paint (Spectral.js) ----------
+   weight is the share of color B, from 0 (all A) to 1 (all B).
+   0.5 is an even 50/50 mix. Returns a "#RRGGBB" string. */
+function mixColors(hexA, hexB, weight = 0.5) {
+  const w = Math.max(0, Math.min(1, weight));
+  const a = new spectral.Color(hexA);
+  const b = new spectral.Color(hexB);
+  return spectral.mix([a, 1 - w], [b, w]).toString();
 }
 
 /* ============================================================
@@ -144,7 +39,7 @@ function readableInk(hex) {
    ============================================================ */
 
 const SWATCHES = [
-  "#e53935", // red
+  "#ff1744", // red (rosy — mixes to a believable purple with blue)
   "#fb8c00", // orange
   "#fdd835", // yellow
   "#43a047", // green
@@ -165,12 +60,19 @@ const areaB = document.getElementById("areaB");
 const mixBtn = document.getElementById("mixBtn");
 const result = document.getElementById("result");
 
+const weightSlider = document.getElementById("weightSlider");
+const pctA = document.getElementById("pctA");
+const pctB = document.getElementById("pctB");
+const dotA = document.getElementById("dotA");
+const dotB = document.getElementById("dotB");
+
 const backdrop = document.getElementById("pickerBackdrop");
 const swatchGrid = document.getElementById("swatchGrid");
 const nativePicker = document.getElementById("nativePicker");
 const closePicker = document.getElementById("closePicker");
 
 let activeTarget = null; // "A" or "B"
+let hasMixed = false; // becomes true after the first MIX IT! press
 
 /* Build the swatch grid once */
 SWATCHES.forEach((color) => {
@@ -182,6 +84,40 @@ SWATCHES.forEach((color) => {
   btn.addEventListener("click", () => applyColor(color));
   swatchGrid.appendChild(btn);
 });
+
+/* Slider value (0..100) as a 0..1 share of color B */
+function currentWeight() {
+  return weightSlider.value / 100;
+}
+
+/* Reflect the slider + chosen colors: percentages, end dots, track gradient */
+function updateWeightUI() {
+  const w = currentWeight();
+  pctA.textContent = Math.round((1 - w) * 100) + "%";
+  pctB.textContent = Math.round(w * 100) + "%";
+
+  const colA = state.A || "#dddddd";
+  const colB = state.B || "#bbbbbb";
+  dotA.style.background = colA;
+  dotB.style.background = colB;
+  weightSlider.style.setProperty("--colA", colA);
+  weightSlider.style.setProperty("--colB", colB);
+}
+
+/* Render the mixed result. animate=true plays the pop animation. */
+function renderResult(animate) {
+  if (!state.A || !state.B) return;
+  const mixed = mixColors(state.A, state.B, currentWeight());
+  result.style.background = mixed;
+  result.style.color = readableInk(mixed);
+  result.innerHTML = "<span>= " + mixed.toUpperCase() + "</span>";
+  if (animate) {
+    result.classList.remove("show");
+    void result.offsetWidth; // restart animation
+    result.classList.add("show");
+  }
+  hasMixed = true;
+}
 
 function openPicker(target) {
   activeTarget = target;
@@ -202,6 +138,9 @@ function applyColor(hex) {
   area.style.background = hex;
   area.classList.add("filled");
   closePickerOverlay();
+  updateWeightUI();
+  // If a result is already showing, keep it in sync with the new color.
+  if (hasMixed) renderResult(false);
 }
 
 areaA.addEventListener("click", () => openPicker("A"));
@@ -211,6 +150,12 @@ backdrop.addEventListener("click", (e) => {
   if (e.target === backdrop) closePickerOverlay();
 });
 nativePicker.addEventListener("input", (e) => applyColor(e.target.value));
+
+// Moving the slider updates the labels, and live-updates the result if shown.
+weightSlider.addEventListener("input", () => {
+  updateWeightUI();
+  if (hasMixed) renderResult(false);
+});
 
 mixBtn.addEventListener("click", () => {
   if (!state.A || !state.B) {
@@ -222,18 +167,15 @@ mixBtn.addEventListener("click", () => {
     );
     return;
   }
-  const mixed = mixColors(state.A, state.B);
-  result.style.background = mixed;
-  result.style.color = readableInk(mixed);
-  result.innerHTML = "<span>= " + mixed.toUpperCase() + "</span>";
-  result.classList.remove("show");
-  void result.offsetWidth; // restart animation
-  result.classList.add("show");
+  renderResult(true);
 
   mixBtn.classList.remove("pop");
   void mixBtn.offsetWidth;
   mixBtn.classList.add("pop");
 });
+
+// Initialize the weight UI on load.
+updateWeightUI();
 
 /* ---------- Register the service worker for offline / install ---------- */
 if ("serviceWorker" in navigator) {

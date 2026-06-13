@@ -26,6 +26,16 @@
     <h1>Mix It!</h1>
   </header>
 
+  <section class="weight-control">
+    <div class="weight-title">Mixing weight</div>
+    <input type="range" id="weightSlider" min="0" max="100" value="50"
+           aria-label="How much of each color to mix" />
+    <div class="weight-ends">
+      <span class="weight-end"><span class="dot" id="dotA"></span><span id="pctA">50%</span></span>
+      <span class="weight-end"><span id="pctB">50%</span><span class="dot" id="dotB"></span></span>
+    </div>
+  </section>
+
   <main class="app">
     <!-- The two pick-a-color areas -->
     <div class="mixers">
@@ -61,6 +71,7 @@
     </div>
   </div>
 
+  <script src="./vendor/spectral.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
