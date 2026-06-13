@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <title>Mix It!</title>
+  <meta name="description" content="A fun, simple app for mixing colors like paint." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#5b3cc4" />
+
+  <!-- iOS standalone support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mix It!" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="title-bar">
+    <h1>Mix It!</h1>
+  </header>
+
+  <main class="app">
+    <!-- The two pick-a-color areas -->
+    <div class="mixers">
+      <button class="color-area" id="areaA" type="button" aria-label="Pick the first color">
+        <span class="hint">Tap to pick</span>
+      </button>
+
+      <div class="plus" aria-hidden="true">+</div>
+
+      <button class="color-area" id="areaB" type="button" aria-label="Pick the second color">
+        <span class="hint">Tap to pick</span>
+      </button>
+    </div>
+
+    <!-- The one button -->
+    <button class="mix-btn" id="mixBtn" type="button">MIX IT!</button>
+
+    <!-- The result area -->
+    <div class="result-area" id="result" aria-live="polite">
+      <span class="hint">= ?</span>
+    </div>
+  </main>
+
+  <!-- Color picker overlay -->
+  <div class="picker-backdrop" id="pickerBackdrop" hidden>
+    <div class="picker" role="dialog" aria-modal="true" aria-label="Pick a color">
+      <div class="swatch-grid" id="swatchGrid"></div>
+      <label class="more-colors">
+        <span>More colors 🎨</span>
+        <input type="color" id="nativePicker" value="#ff0000" />
+      </label>
+      <button class="close-btn" id="closePicker" type="button">Close</button>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
